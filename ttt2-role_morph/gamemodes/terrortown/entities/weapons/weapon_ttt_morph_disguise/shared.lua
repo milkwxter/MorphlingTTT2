@@ -46,11 +46,6 @@ function SWEP:OnDrop()
 	self:Remove()
 end
 
--- Override original primary attack
---function SWEP:PrimaryAttack()
---   
---end
-
 if SERVER then
    -- Give Loadout on respawn and rolechange
 	function ROLE:GiveRoleLoadout(ply, isRoleChange)
