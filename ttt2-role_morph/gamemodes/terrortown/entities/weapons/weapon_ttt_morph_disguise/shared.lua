@@ -29,7 +29,7 @@ SWEP.WorldModel             = "models/weapons/w_knife_t.mdl"
 SWEP.Primary.Damage         = 0
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.DefaultClip    = -1
-SWEP.Primary.Automatic      = true
+SWEP.Primary.Automatic      = false
 SWEP.Primary.Delay          = 1
 SWEP.Primary.Ammo           = "none"
 
@@ -44,4 +44,44 @@ SWEP.DeploySpeed            = 2
 --Removes the Disguise tool on death or drop
 function SWEP:OnDrop()
 	self:Remove()
+end
+
+function morphDisguiseFunction(nickname)
+   print("Nickname selected: " .. nickname)
+end
+
+function SWEP:PrimaryAttack()
+   -- Create a GUI and sound
+   morphFrame = vgui.Create("DFrame")
+	morphFrame:SetPos(10, ScrH() - 800)
+	morphFrame:SetSize(200, 300)
+	morphFrame:SetTitle("Disguise into: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
+	morphFrame:SetDraggable(true)
+	morphFrame:ShowCloseButton(true)
+	morphFrame:SetVisible(true)
+	morphFrame:SetDeleteOnClose(true)
+	surface.PlaySound("npc/antlion/attack_single1.wav")
+
+	-- Create list of Players avaliable to disguise into
+	local list = vgui.Create("DListView", morphFrame)
+	list:Dock(FILL)
+	list:SetMultiSelect(false)
+	list:AddColumn("Players")
+
+   -- Populate the list
+	for _, v in ipairs(player.GetAll()) do
+		if (v:Alive() and not v:IsSpec()) or not v:Alive() then
+			list:AddLine(v:Nick())
+		end
+	end
+
+   -- When player selects one of the options, do X
+	list.OnRowSelected = function(lst, index, pnl)
+		local ply = LocalPlayer()
+		if ply:Alive() and not ply:IsSpec() then
+			morphDisguiseFunction(pnl:GetValue(1))
+		else
+			ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to disguise.")
+		end
+	end
 end
