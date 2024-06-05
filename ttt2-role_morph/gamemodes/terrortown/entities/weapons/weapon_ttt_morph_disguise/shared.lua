@@ -41,19 +41,7 @@ SWEP.IsSilent               = true
 -- Pull out faster than standard guns
 SWEP.DeploySpeed            = 2
 
---Removes the Talon on death or drop
+--Removes the Disguise tool on death or drop
 function SWEP:OnDrop()
 	self:Remove()
-end
-
-if SERVER then
-   -- Give Loadout on respawn and rolechange
-	function ROLE:GiveRoleLoadout(ply, isRoleChange)
-		ply:GiveEquipmentWeapon("weapon_ttt_morph_disguise")
-	end
-
-	-- Remove Loadout on death and rolechange
-	function ROLE:RemoveRoleLoadout(ply, isRoleChange)
-		ply:StripWeapon("weapon_ttt_morph_disguise")
-	end
 end
