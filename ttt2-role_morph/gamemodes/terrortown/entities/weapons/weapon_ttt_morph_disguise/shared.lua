@@ -47,7 +47,15 @@ function SWEP:OnDrop()
 end
 
 function morphDisguiseFunction(nickname)
-   print("Nickname selected: " .. nickname)
+   -- Target ID Shit
+
+   -- Alien effects (DONT TOUCH)
+   local hitEnt = LocalPlayer()
+   local edata = EffectData()
+   edata:SetEntity(hitEnt)
+   surface.PlaySound("npc/antlion/distract1.wav")
+   util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
+   util.Effect("AntlionGib", edata)
 end
 
 function SWEP:PrimaryAttack()
@@ -79,7 +87,10 @@ function SWEP:PrimaryAttack()
 	list.OnRowSelected = function(lst, index, pnl)
 		local ply = LocalPlayer()
 		if ply:Alive() and not ply:IsSpec() then
+         -- Remind player who they disguised into
+         LocalPlayer():PrintMessage(HUD_PRINTTALK, "You disguised into: " .. pnl:GetValue(1))
 			morphDisguiseFunction(pnl:GetValue(1))
+         morphFrame:Close()
 		else
 			ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to disguise.")
 		end
