@@ -42,10 +42,12 @@ if SERVER then
    -- Give Loadout on respawn and rolechange
 	function ROLE:GiveRoleLoadout(ply, isRoleChange)
 		ply:GiveEquipmentWeapon("weapon_ttt_morph_disguise")
+    ply:GiveEquipmentWeapon("weapon_ttt_identity_disguiser")
 	end
 
 	-- Remove Loadout on death and rolechange
 	function ROLE:RemoveRoleLoadout(ply, isRoleChange)
 		ply:StripWeapon("weapon_ttt_morph_disguise")
+    ply:StripWeapon("weapon_ttt_identity_disguiser")
 	end
 end

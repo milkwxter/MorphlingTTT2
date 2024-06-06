@@ -49,6 +49,9 @@ end
 -- Primary attack opens a Disguise menu
 if CLIENT then
    function SWEP:PrimaryAttack()
+      -- create friendly variable for the weapons owner
+      local owner = self:GetOwner()
+
       -- Create a GUI and sound
       morphFrame = vgui.Create("DFrame")
       morphFrame:SetPos(10, ScrH() - 800)
@@ -78,26 +81,37 @@ if CLIENT then
          local ply = LocalPlayer()
          if ply:Alive() and not ply:IsSpec() then
             -- Remind player who they disguised into
-            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You disguised into: " .. pnl:GetValue(1):Nick())
-            morphDisguiseFunction(pnl:GetValue(1))
+            ply:PrintMessage(HUD_PRINTTALK, "You morphed into " .. pnl:GetValue(1):Nick())
+            -- Add special Alien effects
+            morphlingSpecialEffects(owner, pnl:GetValue(1))
+            -- Close the menu
             morphFrame:Close()
          else
-            ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to disguise.")
+            ply:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
          end
       end
    end
 end
 
 -- This is the function that handles the disguise
-function morphDisguiseFunction(plyToDisguiseInto)
-   -- Target ID Shit
-
+function morphlingSpecialEffects(owner, plyToDisguiseInto)
+   -- Tell the Identity Disguiser we have a new player data
+   owner:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
+	owner:DeactivateDisguiserTarget()
    -- Alien effects (DONT TOUCH)
    local hitEnt = LocalPlayer()
    local edata = EffectData()
    edata:SetEntity(hitEnt)
    edata:SetOrigin(hitEnt:GetNetworkOrigin())
-   surface.PlaySound("npc/antlion/distract1.wav")
+   --surface.PlaySound("npc/antlion/distract1.wav")
    util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
    util.Effect("AntlionGib", edata)
+end
+
+
+if CLIENT then
+	function SWEP:Initialize()
+		self:AddTTT2HUDHelp("Open Morphling Menu.")
+		self:AddHUDHelpLine("Show mouse to select Morph target.", Key("+showscores", "tab"))
+	end
 end
