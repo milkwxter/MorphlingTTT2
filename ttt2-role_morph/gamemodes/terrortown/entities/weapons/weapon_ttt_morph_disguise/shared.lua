@@ -46,19 +46,7 @@ function SWEP:OnDrop()
 	self:Remove()
 end
 
-function morphDisguiseFunction(nickname)
-   -- Target ID Shit
-
-   -- Alien effects (DONT TOUCH)
-   local hitEnt = LocalPlayer()
-   local edata = EffectData()
-   edata:SetEntity(hitEnt)
-   edata:SetOrigin(hitEnt:GetNetworkOrigin())
-   surface.PlaySound("npc/antlion/distract1.wav")
-   util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
-   util.Effect("AntlionGib", edata)
-end
-
+-- Primary attack opens a Disguise menu
 if CLIENT then
    function SWEP:PrimaryAttack()
       -- Create a GUI and sound
@@ -98,4 +86,18 @@ if CLIENT then
          end
       end
    end
+end
+
+-- This is the function that handles the disguise
+function morphDisguiseFunction(nickname)
+   -- Target ID Shit
+
+   -- Alien effects (DONT TOUCH)
+   local hitEnt = LocalPlayer()
+   local edata = EffectData()
+   edata:SetEntity(hitEnt)
+   edata:SetOrigin(hitEnt:GetNetworkOrigin())
+   surface.PlaySound("npc/antlion/distract1.wav")
+   util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
+   util.Effect("AntlionGib", edata)
 end
