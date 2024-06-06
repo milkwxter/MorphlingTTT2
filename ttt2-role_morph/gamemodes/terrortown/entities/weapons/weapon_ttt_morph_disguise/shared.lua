@@ -53,7 +53,7 @@ if CLIENT then
       morphFrame = vgui.Create("DFrame")
       morphFrame:SetPos(10, ScrH() - 800)
       morphFrame:SetSize(200, 300)
-      morphFrame:SetTitle("Disguise into: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
+      morphFrame:SetTitle("Gather DNA: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
       morphFrame:SetDraggable(true)
       morphFrame:ShowCloseButton(true)
       morphFrame:SetVisible(true)
@@ -78,18 +78,18 @@ if CLIENT then
          local ply = LocalPlayer()
          if ply:Alive() and not ply:IsSpec() then
             -- Remind player who they disguised into
-            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You disguised into: " .. pnl:GetValue(1):Nick())
-            morphDisguiseFunction(pnl:GetValue(1))
+            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You gathered the DNA of: " .. pnl:GetValue(1):Nick() .. ". Now swap to your Identity Disguiser.")
+            morphlingSpecialEffects()
             morphFrame:Close()
          else
-            ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to disguise.")
+            ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to gather DNA.")
          end
       end
    end
 end
 
 -- This is the function that handles the disguise
-function morphDisguiseFunction(plyToDisguiseInto)
+function morphlingSpecialEffects()
    -- Target ID Shit
 
    -- Alien effects (DONT TOUCH)
@@ -100,4 +100,11 @@ function morphDisguiseFunction(plyToDisguiseInto)
    surface.PlaySound("npc/antlion/distract1.wav")
    util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
    util.Effect("AntlionGib", edata)
+end
+
+if CLIENT then
+	function SWEP:Initialize()
+		self:AddTTT2HUDHelp("Open DNA Selection Menu.")
+		self:AddHUDHelpLine("Show mouse to select DNA.", Key("+showscores", "tab"))
+	end
 end
