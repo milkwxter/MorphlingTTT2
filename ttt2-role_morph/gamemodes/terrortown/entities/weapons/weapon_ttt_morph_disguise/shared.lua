@@ -78,11 +78,11 @@ if CLIENT then
          local ply = LocalPlayer()
          if ply:Alive() and not ply:IsSpec() then
             -- Remind player who they disguised into
-            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You gathered the DNA of: " .. pnl:GetValue(1):Nick() .. ". Now swap to your Identity Disguiser.")
+            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You morphed into: " .. pnl:GetValue(1):Nick())
             morphlingSpecialEffects()
             morphFrame:Close()
          else
-            ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to gather DNA.")
+            ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to morph.")
          end
       end
    end
@@ -90,9 +90,7 @@ end
 
 -- This is the function that handles the disguise
 function morphlingSpecialEffects()
-   -- Target ID Shit
-
-   -- Alien effects (DONT TOUCH)
+   -- Alien effects (DONT TOUCH!!!)
    local hitEnt = LocalPlayer()
    local edata = EffectData()
    edata:SetEntity(hitEnt)
@@ -104,7 +102,7 @@ end
 
 if CLIENT then
 	function SWEP:Initialize()
-		self:AddTTT2HUDHelp("Open DNA Selection Menu.")
-		self:AddHUDHelpLine("Show mouse to select DNA.", Key("+showscores", "tab"))
+		self:AddTTT2HUDHelp("Open Morphling Menu.")
+		self:AddHUDHelpLine("Show mouse to select morph target.", Key("+showscores", "tab"))
 	end
 end
