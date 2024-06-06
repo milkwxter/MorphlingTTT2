@@ -86,6 +86,8 @@ if CLIENT then
             morphlingSpecialEffects(owner, pnl:GetValue(1))
             -- Close the menu
             morphFrame:Close()
+            -- Run my custom Hook
+            hook.Run("EVENT_MORPHLING_DISGUISE", ply)
          else
             ply:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
          end
@@ -94,10 +96,7 @@ if CLIENT then
 end
 
 -- This is the function that handles the disguise
-function morphlingSpecialEffects(owner, plyToDisguiseInto)
-   -- Tell the Identity Disguiser we have a new player data
-   owner:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
-	owner:DeactivateDisguiserTarget()
+function morphlingSpecialEffects(plyToDisguiseInto)
    -- Alien effects (DONT TOUCH)
    local hitEnt = LocalPlayer()
    local edata = EffectData()
@@ -107,6 +106,19 @@ function morphlingSpecialEffects(owner, plyToDisguiseInto)
    util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
    util.Effect("AntlionGib", edata)
 end
+
+if SERVER then
+   hook.Add("EVENT_MORPHLING_DISGUISE", "ttt_let_the_morphling_morph", disguiseMorphling(owner))
+
+   function disguiseMorphling(owner)
+      owner:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
+      owner:DeactivateDisguiserTarget()
+      owner:ToggleDisguiserTarget()
+      LANG.Msg(owner, "IT WORKS!!!!!!!!!!!!!!!!!!!!", nil, MSG_MSTACK_WARN)
+   end
+end
+
+
 
 
 if CLIENT then
