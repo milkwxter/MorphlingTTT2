@@ -69,7 +69,7 @@ if CLIENT then
       -- Populate the list
       for _, v in ipairs(player.GetAll()) do
          if (v:Alive() and not v:IsSpec()) or not v:Alive() then
-            list:AddLine(v:Nick())
+            list:AddLine(v)
          end
       end
 
@@ -78,7 +78,7 @@ if CLIENT then
          local ply = LocalPlayer()
          if ply:Alive() and not ply:IsSpec() then
             -- Remind player who they disguised into
-            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You disguised into: " .. pnl:GetValue(1))
+            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You disguised into: " .. pnl:GetValue(1):Nick())
             morphDisguiseFunction(pnl:GetValue(1))
             morphFrame:Close()
          else
@@ -89,7 +89,7 @@ if CLIENT then
 end
 
 -- This is the function that handles the disguise
-function morphDisguiseFunction(nickname)
+function morphDisguiseFunction(plyToDisguiseInto)
    -- Target ID Shit
 
    -- Alien effects (DONT TOUCH)
