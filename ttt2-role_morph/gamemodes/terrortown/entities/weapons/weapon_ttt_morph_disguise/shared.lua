@@ -46,50 +46,67 @@ function SWEP:OnDrop()
 	self:Remove()
 end
 
--- Primary attack opens a Disguise menu
+if SERVER then
+   function disguiseMorphling(argument, plyToDisguiseInto)
+      LANG.MsgAll("Lang.msgall", nil, MSG_MSTACK_WARN)
+      if argument ~= nil then
+         argument:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
+         argument:DeactivateDisguiserTarget()
+         argument:ToggleDisguiserTarget()
+         LANG.Msg(argument, "IT WORKS!!!!!!!!!!!!!!!!!!!!", nil, MSG_MSTACK_WARN)
+      end
+   end
+
+   hook.Add("EVENT_MORPHLING_DISGUISE", "ttt_let_the_morphling_morph", disguiseMorphling(argument))
+end
+
+
 if CLIENT then
+-- Primary attack opens a Disguise menu
    function SWEP:PrimaryAttack()
       -- create friendly variable for the weapons owner
       local owner = self:GetOwner()
 
+
       -- Create a GUI and sound
-      morphFrame = vgui.Create("DFrame")
-      morphFrame:SetPos(10, ScrH() - 800)
-      morphFrame:SetSize(200, 300)
-      morphFrame:SetTitle("Disguise into: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
-      morphFrame:SetDraggable(true)
-      morphFrame:ShowCloseButton(true)
-      morphFrame:SetVisible(true)
-      morphFrame:SetDeleteOnClose(true)
-      surface.PlaySound("npc/antlion/attack_single1.wav")
-
-      -- Create list of Players avaliable to disguise into
-      local list = vgui.Create("DListView", morphFrame)
-      list:Dock(FILL)
-      list:SetMultiSelect(false)
-      list:AddColumn("Players")
-
-      -- Populate the list
-      for _, v in ipairs(player.GetAll()) do
-         if (v:Alive() and not v:IsSpec()) or not v:Alive() then
-            list:AddLine(v)
+         morphFrame = vgui.Create("DFrame")
+         morphFrame:SetPos(10, ScrH() - 800)
+         morphFrame:SetSize(200, 300)
+         morphFrame:SetTitle("Disguise into: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
+         morphFrame:SetDraggable(true)
+         morphFrame:ShowCloseButton(true)
+         morphFrame:SetVisible(true)
+         morphFrame:SetDeleteOnClose(true)
+         surface.PlaySound("npc/antlion/attack_single1.wav")
+      
+         -- Create list of Players avaliable to disguise into
+         local morphList = vgui.Create("DListView", morphFrame)
+         morphList:Dock(FILL)
+         morphList:SetMultiSelect(false)
+         morphList:AddColumn("Players")
+      
+         -- Populate the list
+         for _, v in ipairs(player.GetAll()) do
+            if (v:Alive() and not v:IsSpec()) or not v:Alive() then
+               morphList:AddLine(v)
+            end
          end
-      end
+      
 
       -- When player selects one of the options, do X
-      list.OnRowSelected = function(lst, index, pnl)
-         local ply = LocalPlayer()
-         if ply:Alive() and not ply:IsSpec() then
+      morphList.OnRowSelected = function(lst, index, pnl)
+         curMorphling = self:GetOwner()
+         if curMorphling:Alive() and not curMorphling:IsSpec() then
             -- Remind player who they disguised into
-            ply:PrintMessage(HUD_PRINTTALK, "You morphed into " .. pnl:GetValue(1):Nick())
+            curMorphling:PrintMessage(HUD_PRINTTALK, "You morphed into " .. pnl:GetValue(1):Nick())
             -- Add special Alien effects
             morphlingSpecialEffects(owner, pnl:GetValue(1))
             -- Close the menu
             morphFrame:Close()
             -- Run my custom Hook
-            hook.Run("EVENT_MORPHLING_DISGUISE", ply)
+            hook.Run("EVENT_MORPHLING_DISGUISE", curMorphling, pnl:GetValue(1)) -- HOOK DOESNT RUN
          else
-            ply:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
+            curMorphling:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
          end
       end
    end
@@ -106,20 +123,6 @@ function morphlingSpecialEffects(plyToDisguiseInto)
    util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
    util.Effect("AntlionGib", edata)
 end
-
-if SERVER then
-   hook.Add("EVENT_MORPHLING_DISGUISE", "ttt_let_the_morphling_morph", disguiseMorphling(owner))
-
-   function disguiseMorphling(owner)
-      owner:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
-      owner:DeactivateDisguiserTarget()
-      owner:ToggleDisguiserTarget()
-      LANG.Msg(owner, "IT WORKS!!!!!!!!!!!!!!!!!!!!", nil, MSG_MSTACK_WARN)
-   end
-end
-
-
-
 
 if CLIENT then
 	function SWEP:Initialize()
