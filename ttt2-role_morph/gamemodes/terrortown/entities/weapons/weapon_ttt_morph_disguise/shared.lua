@@ -1,5 +1,8 @@
 if SERVER then
 	AddCSLuaFile()	
+
+   util.AddNetworkString("TTT2UpdateDisguiserTarget")
+	util.AddNetworkString("TTT2ToggleDisguiserTarget")
 end
 
 SWEP.HoldType               = "knife"
@@ -46,19 +49,24 @@ function SWEP:OnDrop()
 	self:Remove()
 end
 
-if SERVER then
-   function disguiseMorphling(argument, plyToDisguiseInto)
-      LANG.MsgAll("Lang.msgall", nil, MSG_MSTACK_WARN)
-      if argument ~= nil then
-         argument:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
-         argument:DeactivateDisguiserTarget()
-         argument:ToggleDisguiserTarget()
-         LANG.Msg(argument, "IT WORKS!!!!!!!!!!!!!!!!!!!!", nil, MSG_MSTACK_WARN)
-      end
-   end
 
-   hook.Add("EVENT_MORPHLING_DISGUISE", "ttt_let_the_morphling_morph", disguiseMorphling(argument))
+function disguiseMorphling(argument, plyToDisguiseInto)
+   -- if argument is not anything leave the function early
+   if argument == nil then return end
+   if CLIENT then
+      argument:PrintMessage(HUD_PRINTTALK, "You are a Retarded Morphling")
+      argument:PrintMessage(HUD_PRINTTALK, argument)
+      argument:PrintMessage(HUD_PRINTTALK, plyToDisguiseInto)
+      argument:PrintMessage(HUD_PRINTTALK, plyToDisguiseInto:GetModel())
+   end
+   if SERVER then
+      argument:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
+      argument:DeactivateDisguiserTarget()
+      argument:ToggleDisguiserTarget()
+   end
 end
+
+hook.Add("EVENT_MORPHLING_DISGUISE", "ttt2_morphling_morph", disguiseMorphling)
 
 
 if CLIENT then
@@ -98,13 +106,14 @@ if CLIENT then
          curMorphling = self:GetOwner()
          if curMorphling:Alive() and not curMorphling:IsSpec() then
             -- Remind player who they disguised into
-            curMorphling:PrintMessage(HUD_PRINTTALK, "You morphed into " .. pnl:GetValue(1):Nick())
+            ent = pnl:GetValue(1)
+            curMorphling:PrintMessage(HUD_PRINTTALK, "You morphed into " .. ent:Nick())
             -- Add special Alien effects
-            morphlingSpecialEffects(owner, pnl:GetValue(1))
+            morphlingSpecialEffects(owner, ent)
             -- Close the menu
             morphFrame:Close()
             -- Run my custom Hook
-            hook.Run("EVENT_MORPHLING_DISGUISE", curMorphling, pnl:GetValue(1)) -- HOOK DOESNT RUN
+            hook.Call("EVENT_MORPHLING_DISGUISE", nil, curMorphling, pnl:GetValue(1)) -- HOOK DOESNT RUN
          else
             curMorphling:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
          end
@@ -112,14 +121,18 @@ if CLIENT then
    end
 end
 
--- This is the function that handles the disguise
+-- This is the function that handles the Alien effects (DONT TOUCH)
 function morphlingSpecialEffects(plyToDisguiseInto)
-   -- Alien effects (DONT TOUCH)
+   -- Gather data about the morphlings position
    local hitEnt = LocalPlayer()
    local edata = EffectData()
    edata:SetEntity(hitEnt)
    edata:SetOrigin(hitEnt:GetNetworkOrigin())
-   --surface.PlaySound("npc/antlion/distract1.wav")
+   -- play a sound for the client
+   if CLIENT then
+      surface.PlaySound("npc/antlion/distract1.wav")
+   end
+   -- paint some icky stuff and particles
    util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
    util.Effect("AntlionGib", edata)
 end
