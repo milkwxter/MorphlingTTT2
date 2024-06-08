@@ -85,8 +85,11 @@ if CLIENT then
          if ply:Alive() and not ply:IsSpec() then
             -- Remind player who they disguised into
             LocalPlayer():PrintMessage(HUD_PRINTTALK, "You morphed into: " .. pnl:GetValue(1):Nick())
+            -- Do alien effects
             morphlingSpecialEffects()
+            -- Close the menu
             morphFrame:Close()
+            -- Start a message to the server, send the local player and whoever they selected
             net.Start("ttt2_morphling_morph_net")
             net.WriteEntity(LocalPlayer())
 				net.WriteEntity(pnl:GetValue(1))
