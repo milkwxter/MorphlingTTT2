@@ -21,6 +21,11 @@ if CLIENT then
 
    SWEP.Icon                = "vgui/ttt/icon_morph_disguise"
    SWEP.IconLetter          = "j"
+
+	function SWEP:Initialize()
+		self:AddTTT2HUDHelp("Open Morphling Menu.")
+		self:AddHUDHelpLine("Show mouse to select Morph target.", Key("+showscores", "tab"))
+	end
 end
 
 SWEP.Base                   = "weapon_tttbase"
@@ -59,7 +64,7 @@ function disguiseMorphling(argument, plyToDisguiseInto)
       argument:PrintMessage(HUD_PRINTTALK, plyToDisguiseInto)
       argument:PrintMessage(HUD_PRINTTALK, plyToDisguiseInto:GetModel())
    end
-   if SERVER then -- bug server never really gets called.
+   if SERVER then
       EPOP:AddMessage({text =  "I am the SERVER. Enjoy this EPOP message.", color = MORPHLING.color}, {text = "Hello from the SERVER."}, 5, nil, true)
       argument:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
       argument:DeactivateDisguiserTarget()
@@ -67,57 +72,55 @@ function disguiseMorphling(argument, plyToDisguiseInto)
    end
 end
 
-hook.Add("EVENT_MORPHLING_DISGUISE", "ttt2_morphling_morph", disguiseMorphling)
-
-
-if CLIENT then
 -- Primary attack opens a Disguise menu
-   function SWEP:PrimaryAttack()
+function SWEP:PrimaryAttack()
+   if CLIENT then
       -- create friendly variable for the weapons owner
       local owner = self:GetOwner()
+      -- Simply open the morphling menu
+      openMorphlingMenu(owner)
+   end
+end
 
+function openMorphlingMenu(owner)
+-- Create a GUI and sound
+   morphFrame = vgui.Create("DFrame")
+   morphFrame:SetPos(10, ScrH() - 800)
+   morphFrame:SetSize(200, 300)
+   morphFrame:SetTitle("Disguise into: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
+   morphFrame:SetDraggable(true)
+   morphFrame:ShowCloseButton(true)
+   morphFrame:SetVisible(true)
+   morphFrame:SetDeleteOnClose(true)
+   surface.PlaySound("npc/antlion/attack_single1.wav")
+   
+   -- Create list of Players avaliable to disguise into
+   local morphList = vgui.Create("DListView", morphFrame)
+   morphList:Dock(FILL)
+   morphList:SetMultiSelect(false)
+   morphList:AddColumn("Players")
+   
+   -- Populate the list
+   for _, v in ipairs(player.GetAll()) do
+      if (v:Alive() and not v:IsSpec()) or not v:Alive() then
+         morphList:AddLine(v)
+      end
+   end
 
-      -- Create a GUI and sound
-         morphFrame = vgui.Create("DFrame")
-         morphFrame:SetPos(10, ScrH() - 800)
-         morphFrame:SetSize(200, 300)
-         morphFrame:SetTitle("Disguise into: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
-         morphFrame:SetDraggable(true)
-         morphFrame:ShowCloseButton(true)
-         morphFrame:SetVisible(true)
-         morphFrame:SetDeleteOnClose(true)
-         surface.PlaySound("npc/antlion/attack_single1.wav")
-      
-         -- Create list of Players avaliable to disguise into
-         local morphList = vgui.Create("DListView", morphFrame)
-         morphList:Dock(FILL)
-         morphList:SetMultiSelect(false)
-         morphList:AddColumn("Players")
-      
-         -- Populate the list
-         for _, v in ipairs(player.GetAll()) do
-            if (v:Alive() and not v:IsSpec()) or not v:Alive() then
-               morphList:AddLine(v)
-            end
-         end
-      
-
-      -- When player selects one of the options, do X
-      morphList.OnRowSelected = function(lst, index, pnl)
-         curMorphling = self:GetOwner()
-         if curMorphling:Alive() and not curMorphling:IsSpec() then
-            -- Remind player who they disguised into
-            ent = pnl:GetValue(1)
-            curMorphling:PrintMessage(HUD_PRINTTALK, "You morphed into " .. ent:Nick())
-            -- Add special Alien effects
-            morphlingSpecialEffects(owner, ent)
-            -- Close the menu
-            morphFrame:Close()
-            -- Run my custom Hook
-            hook.Call("EVENT_MORPHLING_DISGUISE", nil, curMorphling, pnl:GetValue(1)) -- HOOK DOESNT RUN
-         else
-            curMorphling:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
-         end
+   -- When player selects one of the options, do X
+   morphList.OnRowSelected = function(lst, index, pnl)
+      if owner:Alive() and not owner:IsSpec() then
+         -- Remind player who they disguised into
+         ent = pnl:GetValue(1)
+         owner:PrintMessage(HUD_PRINTTALK, "You morphed into " .. ent:Nick())
+         -- Add special alien effects
+         morphlingSpecialEffects(owner, ent)
+         -- Close the menu
+         morphFrame:Close()
+         -- Run my custom Hook
+         hook.Call("EVENT_MORPHLING_DISGUISE", nil, owner, pnl:GetValue(1)) -- HOOK DOESNT RUN
+      else
+         owner:PrintMessage(HUD_PRINTTALK, "ERROR! You must be alive to morph.")
       end
    end
 end
@@ -136,11 +139,4 @@ function morphlingSpecialEffects(plyToDisguiseInto)
    -- paint some icky stuff and particles
    util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
    util.Effect("AntlionGib", edata)
-end
-
-if CLIENT then
-	function SWEP:Initialize()
-		self:AddTTT2HUDHelp("Open Morphling Menu.")
-		self:AddHUDHelpLine("Show mouse to select Morph target.", Key("+showscores", "tab"))
-	end
 end
