@@ -85,10 +85,10 @@ if CLIENT then
          if ply:Alive() and not ply:IsSpec() then
             -- Remind player who they disguised into
             LocalPlayer():PrintMessage(HUD_PRINTTALK, "You morphed into: " .. pnl:GetValue(1):Nick())
-            -- Do alien effects
-            morphlingSpecialEffects()
             -- Close the menu
             morphFrame:Close()
+            -- Play a sound for the client
+            surface.PlaySound("npc/antlion/distract1.wav")
             -- Start a message to the server, send the local player and whoever they selected
             net.Start("ttt2_morphling_morph_net")
             net.WriteEntity(LocalPlayer())
@@ -99,18 +99,6 @@ if CLIENT then
          end
       end
    end
-end
-
--- This is the function that handles the disguise
-function morphlingSpecialEffects()
-   -- Alien effects (DONT TOUCH!!!)
-   local hitEnt = LocalPlayer()
-   local edata = EffectData()
-   edata:SetEntity(hitEnt)
-   edata:SetOrigin(hitEnt:GetNetworkOrigin())
-   surface.PlaySound("npc/antlion/distract1.wav")
-   util.PaintDown(hitEnt:LocalToWorld(hitEnt:OBBCenter()), "Antlion.Splat", hitEnt)
-   util.Effect("AntlionGib", edata)
 end
 
 net.Receive("ttt2_morphling_morph_net", function()
@@ -128,4 +116,11 @@ net.Receive("ttt2_morphling_morph_net", function()
    morphlingPlayer:UpdateStoredDisguiserTarget(morphTarget, morphTarget:GetModel(), morphTarget:GetSkin())
 	morphlingPlayer:DeactivateDisguiserTarget()
    morphlingPlayer:ToggleDisguiserTarget()
+
+   -- Alien effects (DONT TOUCH!!!)
+   local edata = EffectData()
+   edata:SetEntity(morphlingPlayer)
+   edata:SetOrigin(morphlingPlayer:GetNetworkOrigin())
+   util.PaintDown(morphlingPlayer:LocalToWorld(morphlingPlayer:OBBCenter()), "Antlion.Splat", morphlingPlayer)
+   util.Effect("AntlionGib", edata)
 end)
