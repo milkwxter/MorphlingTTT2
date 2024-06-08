@@ -47,6 +47,8 @@ SWEP.IsSilent               = true
 -- Pull out faster than standard guns
 SWEP.DeploySpeed            = 2
 
+local MorphlingMenuOpen = false
+
 --Removes the Disguise tool on death or drop
 function SWEP:OnDrop()
 	self:Remove()
@@ -55,13 +57,15 @@ end
 -- Primary attack opens a Disguise menu
 if CLIENT then
    function SWEP:PrimaryAttack()
+      if MorphlingMenuOpen == true then return end
       -- Create a GUI and sound
+      MorphlingMenuOpen = true
       morphFrame = vgui.Create("DFrame")
       morphFrame:SetPos(10, ScrH() - 800)
       morphFrame:SetSize(200, 300)
       morphFrame:SetTitle("Gather DNA: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
       morphFrame:SetDraggable(true)
-      morphFrame:ShowCloseButton(true)
+      morphFrame:ShowCloseButton(false)
       morphFrame:SetVisible(true)
       morphFrame:SetDeleteOnClose(true)
       surface.PlaySound("npc/antlion/attack_single1.wav")
@@ -94,6 +98,8 @@ if CLIENT then
             net.WriteEntity(LocalPlayer())
 				net.WriteEntity(pnl:GetValue(1))
 				net.SendToServer()
+            -- tell the weapon the menu is closed
+            MorphlingMenuOpen = false
          else
             ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to morph.")
          end
