@@ -1,5 +1,6 @@
 if SERVER then
 	AddCSLuaFile()	
+   util.AddNetworkString("ttt2_morphling_morph_net")
 end
 
 SWEP.HoldType               = "knife"
@@ -18,6 +19,11 @@ if CLIENT then
 
    SWEP.Icon                = "vgui/ttt/icon_morph_disguise"
    SWEP.IconLetter          = "j"
+
+   function SWEP:Initialize()
+		self:AddTTT2HUDHelp("Open Morphling Menu.")
+		self:AddHUDHelpLine("Show mouse to select morph target.", Key("+showscores", "tab"))
+	end
 end
 
 SWEP.Base                   = "weapon_tttbase"
@@ -81,6 +87,10 @@ if CLIENT then
             LocalPlayer():PrintMessage(HUD_PRINTTALK, "You morphed into: " .. pnl:GetValue(1):Nick())
             morphlingSpecialEffects()
             morphFrame:Close()
+            net.Start("ttt2_morphling_morph_net")
+            net.WriteEntity(LocalPlayer())
+				net.WriteEntity(pnl:GetValue(1))
+				net.SendToServer()
          else
             ply:PrintMessage(HUD_PRINTTALK, "Error. You must be alive to morph.")
          end
@@ -100,9 +110,19 @@ function morphlingSpecialEffects()
    util.Effect("AntlionGib", edata)
 end
 
-if CLIENT then
-	function SWEP:Initialize()
-		self:AddTTT2HUDHelp("Open Morphling Menu.")
-		self:AddHUDHelpLine("Show mouse to select morph target.", Key("+showscores", "tab"))
-	end
-end
+net.Receive("ttt2_morphling_morph_net", function()
+   local morphlingPlayer = net.ReadEntity()
+   local morphTarget = net.ReadEntity()
+
+   if CLIENT then return end
+
+   if morphTarget == morphlingPlayer then
+      morphlingPlayer:DeactivateDisguiserTarget()
+	   morphlingPlayer:UpdateStoredDisguiserTarget(nil)
+      return
+   end
+
+   morphlingPlayer:UpdateStoredDisguiserTarget(morphTarget, morphTarget:GetModel(), morphTarget:GetSkin())
+	morphlingPlayer:DeactivateDisguiserTarget()
+   morphlingPlayer:ToggleDisguiserTarget()
+end)
