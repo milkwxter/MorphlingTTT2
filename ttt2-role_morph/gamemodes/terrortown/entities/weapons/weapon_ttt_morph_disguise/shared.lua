@@ -54,12 +54,13 @@ function disguiseMorphling(argument, plyToDisguiseInto)
    -- if argument is not anything leave the function early
    if argument == nil then return end
    if CLIENT then
-      argument:PrintMessage(HUD_PRINTTALK, "You are a Retarded Morphling")
+      argument:PrintMessage(HUD_PRINTTALK, "You are a CLIENT morphling.")
       argument:PrintMessage(HUD_PRINTTALK, argument)
       argument:PrintMessage(HUD_PRINTTALK, plyToDisguiseInto)
       argument:PrintMessage(HUD_PRINTTALK, plyToDisguiseInto:GetModel())
    end
-   if SERVER then
+   if SERVER then -- bug server never really gets called.
+      EPOP:AddMessage({text =  "I am the SERVER. Enjoy this EPOP message.", color = MORPHLING.color}, {text = "Hello from the SERVER."}, 5, nil, true)
       argument:UpdateStoredDisguiserTarget(plyToDisguiseInto, plyToDisguiseInto:GetModel(), plyToDisguiseInto:GetSkin())
       argument:DeactivateDisguiserTarget()
       argument:ToggleDisguiserTarget()
