@@ -1,6 +1,8 @@
 if SERVER then
 	AddCSLuaFile()	
    util.AddNetworkString("ttt2_morphling_morph_net")
+   resource.AddWorkshop("3263839562") -- Auto download the mod for clients
+   resource.AddWorkshop("2144375749") -- Auto download the required mod for clients
 end
 
 SWEP.HoldType               = "knife"
