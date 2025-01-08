@@ -60,9 +60,12 @@ end
 if CLIENT then
    function SWEP:PrimaryAttack()
       if MorphlingMenuOpen == true then return end
+	  -- Store reference to local player
+	  local ply = LocalPlayer()
+	  
       -- Create a GUI and sound
+	  morphFrame = vgui.Create("DFrame")
       MorphlingMenuOpen = true
-      morphFrame = vgui.Create("DFrame")
       morphFrame:SetPos(10, ScrH() - 800)
       morphFrame:SetSize(200, 300)
       morphFrame:SetTitle("Gather DNA: (Hold " .. Key("+showscores", "tab"):lower() .. ")")
@@ -87,19 +90,16 @@ if CLIENT then
 
       -- When player selects one of the options, do X
       list.OnRowSelected = function(lst, index, pnl)
-         local ply = LocalPlayer()
          if ply:Alive() and not ply:IsSpec() then
-            -- Remind player who they disguised into
-            LocalPlayer():PrintMessage(HUD_PRINTTALK, "You morphed into: " .. pnl:GetValue(1):Nick())
             -- Close the menu
             morphFrame:Close()
             -- Play a sound for the client
             surface.PlaySound("npc/antlion/distract1.wav")
             -- Start a message to the server, send the local player and whoever they selected
             net.Start("ttt2_morphling_morph_net")
-            net.WriteEntity(LocalPlayer())
-				net.WriteEntity(pnl:GetValue(1))
-				net.SendToServer()
+            net.WriteEntity(ply)
+			net.WriteEntity(pnl:GetValue(1))
+			net.SendToServer()
             -- tell the weapon the menu is closed
             MorphlingMenuOpen = false
          else
@@ -110,22 +110,33 @@ if CLIENT then
 end
 
 net.Receive("ttt2_morphling_morph_net", function()
-   local morphlingPlayer = net.ReadEntity()
-   local morphTarget = net.ReadEntity()
+	-- collect information from net message
+    local morphlingPlayer = net.ReadEntity()
+    local morphTarget = net.ReadEntity()
+	
+	-- no clients allowed
+    if CLIENT then return end
+	
+	if morphlingPlayer:GetRoleString() != "morphling" then
+		morphlingPlayer:PrintMessage(HUD_PRINTTALK, "Error. You are no longer a Morphling. You can safely ignore this message.")
+		return 
+	end
 
-   if CLIENT then return end
-
-   if morphTarget == morphlingPlayer then
-      morphlingPlayer:DeactivateDisguiserTarget()
+	-- check if morphing player decides to remove disguise
+    if morphTarget == morphlingPlayer then
+	   morphlingPlayer:PrintMessage(HUD_PRINTTALK, "You removed your disguise!")
+       morphlingPlayer:DeactivateDisguiserTarget()
 	   morphlingPlayer:UpdateStoredDisguiserTarget(nil)
       return
-   end
+    end
 
-   morphlingPlayer:UpdateStoredDisguiserTarget(morphTarget, morphTarget:GetModel(), morphTarget:GetSkin())
+	-- otherwise, update his disguise
+	morphlingPlayer:PrintMessage(HUD_PRINTTALK, "You morphed into: " .. morphTarget:Nick())
+    morphlingPlayer:UpdateStoredDisguiserTarget(morphTarget, morphTarget:GetModel(), morphTarget:GetSkin())
 	morphlingPlayer:DeactivateDisguiserTarget()
-   morphlingPlayer:ToggleDisguiserTarget()
+    morphlingPlayer:ToggleDisguiserTarget()
 
-   -- Alien effects (DONT TOUCH!!!)
+   -- alien effects
    local edata = EffectData()
    edata:SetEntity(morphlingPlayer)
    edata:SetOrigin(morphlingPlayer:GetNetworkOrigin())
